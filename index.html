@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro y Geolocalización Obligatoria</title>
+    <title>Registro y Monitoreo de Movimiento GPS</title>
     <style>
         :root {
             --primary-color: #2563eb;
@@ -14,7 +14,7 @@
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
+            background-color: var--bg-color);
             margin: 0;
             padding: 20px;
             display: flex;
@@ -64,7 +64,6 @@
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
-        /* Estilos para el Switch de Ubicación */
         .switch-container {
             background: #f1f5f9;
             padding: 16px;
@@ -154,12 +153,13 @@
         .tracking-status {
             background-color: #e0f2fe;
             color: #0369a1;
-            padding: 10px;
+            padding: 12px;
             border-radius: 6px;
             text-align: center;
             font-size: 13px;
             margin-top: 15px;
             display: none;
+            line-height: 1.5;
         }
     </style>
 </head>
@@ -171,7 +171,7 @@
         <h2>Verificación de Seguridad</h2>
         <div class="switch-container">
             <label for="locationSwitch" style="font-size: 15px; color: #1e293b;">Activar Ubicación GPS</label>
-            <p style="font-size: 12px; color: #64748b; margin: 8px 0;">Es obligatorio activar el switch para validar tu zona y continuar con el registro.</p>
+            <p style="font-size: 12px; color: #64748b; margin: 8px 0;">Es obligatorio activar el switch para validar tu zona y continuar.</p>
             <label class="switch">
                 <input type="checkbox" id="locationSwitch">
                 <span class="slider"></span>
@@ -183,7 +183,7 @@
     <!-- PASO 2: FORMULARIO DE DATOS Y PROXIMIDAD -->
     <div id="step-form" class="step">
         <h2>Registro de Reporte</h2>
-        <div class="alert alert-success">¡Ubicación validada con éxito! Proximidad detectada.</div>
+        <div class="alert alert-success">¡Ubicación validada con éxito!</div>
         
         <form id="reportForm">
             <div class="form-group">
@@ -201,18 +201,19 @@
                 <input type="tel" id="telefono" required placeholder="Ej. 3001234567">
             </div>
 
-            <!-- Campos ocultos para capturar datos técnicos de geolocalización -->
+            <!-- Campos ocultos -->
             <input type="hidden" id="lat">
             <input type="hidden" id="lon">
             <input type="hidden" id="proximidad">
 
-            <button type="submit" id="submitBtn">Enviar Reporte</button>
-            <div id="formLoader" class="loader" style="display:none;">Enviando datos al sistema...</div>
+            <button type="submit" id="submitBtn">Enviar Reporte e Iniciar Monitoreo</button>
+            <div id="formLoader" class="loader" style="display:none;">Enviando datos iniciales...</div>
         </form>
 
-        <!-- Indicador visual de que el rastreo de pings está activo -->
+        <!-- Indicador visual en tiempo real -->
         <div id="trackingStatus" class="tracking-status">
-            📍 Monitoreo activo: Enviando ping de ubicación cada 5 minutos.
+            📍 <b>Monitoreo Activo (Cada 2 min)</b><br>
+            <span id="liveInfo">Esperando siguiente registro automático...</span>
         </div>
     </div>
 </div>
@@ -225,26 +226,43 @@
     const stepLocation = document.getElementById('step-location');
     const stepForm = document.getElementById('step-form');
 
-    let userLat = null;
-    let userLon = null;
-    let userProximityText = "";
-    let pingInterval = null; // Variable para controlar el bucle de los 5 minutos
+    let initialLat = null;
+    let initialLon = null;
+    let lastLat = null;
+    let lastLon = null;
+    let pingInterval = null;
+
+    // Fórmula matemática de Haversine para calcular distancia en metros entre dos coordenadas GPS
+    functio calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371e3; // Radio de la tierra en metros
+        const φ1 = lat1 * Math.PI/180;
+        const φ2 = lat2 * Math.PI/180;
+        const Δφ = (lat2-lat1) * Math.PI/180;
+        const Δλ = (lon2-lon1) * Math.PI/180;
+
+        const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                  Math.cos(φ1) * Math.cos(φ2) *
+                  Math.sin(Δλ/2) * Math.sin(Δλ/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+        return Math.round(R * c); // Retorna la distancia en metros enteros
+    }
 
     locationSwitch.addEventListener('change', function() {
         if (this.checked) {
-            locationStatus.innerHTML = '<div class="loader">Obteniendo ubicación satelital y calculando proximidad...</div>';
+            locationStatus.innerHTML = '<div class="loader">Obteniendo coordenadas GPS iniciales...</div>';
             
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
-                    async (position) => {
-                        userLat = position.coords.latitude;
-                        userLon = position.coords.longitude;
+                    (position) => {
+                        initialLat = position.coords.latitude;
+                        initialLon = position.coords.longitude;
+                        lastLat = initialLat;
+                        lastLon = initialLon;
                         
-                        userProximityText = `Lat: ${userLat.toFixed(5)}, Lon: ${userLon.toFixed(5)}`;
-                        
-                        document.getElementById('lat').value = userLat;
-                        document.getElementById('lon').value = userLon;
-                        document.getElementById('proximidad').value = userProximityText;
+                        document.getElementById('lat').value = initialLat;
+                        document.getElementById('lon').value = initialLon;
+                        document.getElementById('proximidad').value = `Lat: ${initialLat.toFixed(5)}, Lon: ${initialLon.toFixed(5)}`;
 
                         setTimeout(() => {
                             stepLocation.classList.remove('active');
@@ -268,7 +286,7 @@
         }
     });
 
-    // Manejo del envío del formulario
+    // Envío del formulario inicial y arranque del bucle de 2 minutos
     document.getElementById('reportForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -282,32 +300,32 @@
         const documentoVal = document.getElementById('documento').value;
         const telefonoVal = document.getElementById('telefono').value;
 
-        const formData = {
+        const initialData = {
             nombre: nombreVal,
             documento: documentoVal,
             telefono: telefonoVal,
-            lat: document.getElementById('lat').value,
-            lon: document.getElementById('lon').value,
-            proximidad: document.getElementById('proximidad').value
+            lat: initialLat,
+            lon: initialLon,
+            proximidad: `Inicio - Lat: ${initialLat.toFixed(5)}, Lon: ${initialLon.toFixed(5)}`,
+            distancia: 0,
+            estado: "Punto de Partida (0m)"
         };
 
+        // 1. Enviar registro inicial al Sheet
         fetch(SCRIPT_URL, {
             method: 'POST',
             mode: 'no-cors',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(initialData)
         })
         .then(() => {
-            alert('¡Reporte generado y guardado con éxito!');
+            alert('¡Reporte inicial registrado con éxito! Monitoreo de movimiento activado cada 2 minutos.');
             
-            // Ocultar botón y mostrar aviso de monitoreo de pings activo
             document.getElementById('reportForm').style.display = 'none';
             document.getElementById('trackingStatus').style.display = 'block';
 
-            // INICIAR EL PING CADA 5 MINUTOS (300,000 milisegundos)
-            if (pingInterval) clearInterval(pingInterval); // Limpiar previo por seguridad
+            // 2. INICIAR PING AUTOMÁTICO CADA 2 MINUTOS (120,000 ms)
+            if (pingInterval) clearInterval(pingInterval);
             
             pingInterval = setInterval(() => {
                 if (navigator.geolocation) {
@@ -315,37 +333,54 @@
                         (position) => {
                             const currentLat = position.coords.latitude;
                             const currentLon = position.coords.longitude;
-                            const currentProx = `Ping automático - Lat: ${currentLat.toFixed(5)}, Lon: ${currentLon.toFixed(5)}`;
+
+                            // Calcular metros movidos respecto al último registro y respecto al inicio
+                            const metersMoved = calculateDistance(lastLat, lastLon, currentLat, currentLon);
+                            const totalMetersFromStart = calculateDistance(initialLat, initialLon, currentLat, currentLon);
+
+                            let movimientoEstado = "Estático / Sin cambios";
+                            if (metersMoved > 5) { // Margen de tolerancia de 5 metros por error de GPS
+                                movimientoEstado = `En movimiento (${metersMoved}m desde el último chequeo)`;
+                            }
 
                             const pingData = {
-                                nombre: nombreVal + " (PING 5 MIN)",
+                                nombre: nombreVal + " (PING 2 MIN)",
                                 documento: documentoVal,
                                 telefono: telefonoVal,
                                 lat: currentLat,
                                 lon: currentLon,
-                                proximidad: currentProx
+                                proximidad: `Lat: ${currentLat.toFixed(5)}, Lon: ${currentLon.toFixed(5)}`,
+                                distancia: totalMetersFromStart, // Distancia acumulada total desde el punto inicial
+                                estado: movimientoEstado
                             };
 
-                            // Enviar ping silencioso a Google Sheets
+                            // Enviar datos automáticos al Sheet
                             fetch(SCRIPT_URL, {
                                 method: 'POST',
                                 mode: 'no-cors',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify(pingData)
-                            }).catch(err => console.error("Error en ping de ubicación:", err));
+                            }).catch(err => console.error("Error enviando ping:", err));
+
+                            // Actualizar última posición conocida
+                            lastLat = currentLat;
+                            lastLon = currentLon;
+
+                            // Actualizar pantalla visualmente
+                            document.getElementById('liveInfo').innerHTML = `Último chequeo: Movimiento total de <b>${totalMetersFromStart} metros</b> desde el inicio. Estado: <i>${movimientoEstado}</i>`;
                         },
                         (err) => {
-                            console.warn("No se pudo refrescar la ubicación para el ping:", err);
+                            console.warn("Error obteniendo nueva ubicación GPS:", err);
                         },
                         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                     );
                 }
-            }, 300000); // 300,000 ms = 5 minutos
+            }, 120000); // 120,000 ms = Exactamente 2 minutos
 
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Hubo un error al enviar el reporte.');
+            alert('Hubo un error al enviar el reporte inicial.');
             submitBtn.disabled = false;
         })
         .finally(() => {
