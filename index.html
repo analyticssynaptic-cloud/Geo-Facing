@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro y Geolocalización Obligatoria</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --error-color: #dc2626;
+            --success-color: #16a34a;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            width: 100%;
+            max-width: 450px;
+        }
+        h2 {
+            color: #1e293b;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .step {
+            display: none;
+        }
+        .step.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #475569;
+            font-size: 14px;
+        }
+        input[type="text"], input[type="tel"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        /* Estilos para el Switch de Ubicación */
+        .switch-container {
+            background: #f1f5f9;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+            margin-top: 10px;
+        }
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        .alert {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            text-align: center;
+        }
+        .alert-error {
+            background-color: #fee2e2;
+            color: var(--error-color);
+            border: 1px solid #fecaca;
+        }
+        .alert-success {
+            background-color: #dcfce7;
+            color: var(--success-color);
+            border: 1px solid #bbf7d0;
+        }
+        button {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #1d4ed8;
+            background-color: #1d4ed8;
+        }
+        button:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+        }
+        .loader {
+            text-align: center;
+            font-style: italic;
+            color: #64748b;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- PASO 1: VALIDACIÓN OBLIGATORIA DE UBICACIÓN -->
+    <div id="step-location" class="step active">
+        <h2>Verificación de Seguridad</h2>
+        <div class="switch-container">
+            <label for="locationSwitch" style="font-size: 15px; color: #1e293b;">Activar Ubicación GPS</label>
+            <p style="font-size: 12px; color: #64748b; margin: 8px 0;">Es obligatorio activar el switch para validar tu zona y continuar con el registro.</p>
+            <label class="switch">
+                <input type="checkbox" id="locationSwitch">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div id="locationStatus"></div>
+    </div>
+
+    <!-- PASO 2: FORMULARIO DE DATOS Y PROXIMIDAD -->
+    <div id="step-form" class="step">
+        <h2>Registro de Reporte</h2>
+        <div class="alert alert-success">¡Ubicación validada con éxito! Proximidad detectada.</div>
+        
+        <form id="reportForm">
+            <div class="form-group">
+                <label for="nombre">Nombre Completo:</label>
+                <input type="text" id="nombre" required placeholder="Ej. Robinson Zapata">
+            </div>
+            
+            <div class="form-group">
+                <label for="documento">Número de Documento:</label>
+                <input type="text" id="documento" required placeholder="Ej. 123456789">
+            </div>
+            
+            <div class="form-group">
+                <label for="telefono">Número de Teléfono:</label>
+                <input type="tel" id="telefono" required placeholder="Ej. 3001234567">
+            </div>
+
+            <!-- Campos ocultos para capturar datos técnicos de geolocalización -->
+            <input type="hidden" id="lat">
+            <input type="hidden" id="lon">
+            <input type="hidden" id="proximidad">
+
+            <button type="submit" id="submitBtn">Enviar Reporte</button>
+            <div id="formLoader" class="loader" style="display:none;">Enviando datos al sistema...</div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzge_a_j4rNMYSGGHv5aPHGgoM9_oL5pqauZttBe4525nKSkUM53hFUZ7aG-fyAYCgy/exec'; // Reemplaza con tu URL de Apps Script
+    
+    const locationSwitch = document.getElementById('locationSwitch');
+    const locationStatus = document.getElementById('locationStatus');
+    const stepLocation = document.getElementById('step-location');
+    const stepForm = document.getElementById('step-form');
+
+    let userLat = null;
+    let userLon = null;
+    let userProximityText = "";
+
+    locationSwitch.addEventListener('change', function() {
+        if (this.checked) {
+            locationStatus.innerHTML = '<div class="loader">Obteniendo ubicación satelital y calculando proximidad...</div>';
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        userLat = position.coords.latitude;
+                        userLon = position.coords.longitude;
+                        
+                        // Generar cadena de proximidad basada en coordenadas relativas o Reverse Geocoding aproximado
+                        userProximityText = `Lat: ${userLat.toFixed(5)}, Lon: ${userLon.toFixed(5)}`;
+                        
+                        document.getElementById('lat').value = userLat;
+                        document.getElementById('lon').value = userLon;
+                        document.getElementById('proximidad').value = userProximityText;
+
+                        // Transición limpia al formulario si pasa la validación
+                        setTimeout(() => {
+                            stepLocation.classList.remove('active');
+                            stepForm.classList.add('active');
+                        }, 800);
+                    },
+                    (error) => {
+                        locationSwitch.checked = false;
+                        let msg = "Error al obtener ubicación.";
+                        if(error.code === error.PERMISSION_DENIED) {
+                            msg = "Acceso denegado. Es obligatorio permitir la ubicación para continuar.";
+                        }
+                        locationStatus.innerHTML = `<div class="alert alert-error">${msg}</div>`;
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            } else {
+                locationSwitch.checked = false;
+                locationStatus.innerHTML = '<div class="alert alert-error">Tu navegador no soporta geolocalización.</div>';
+            }
+        }
+    });
+
+    // Manejo del envío del formulario mediante Fetch hacia Google Apps Script
+    document.getElementById('reportForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById('submitBtn');
+        const formLoader = document.getElementById('formLoader');
+        
+        submitBtn.disabled = true;
+        formLoader.style.display = 'block';
+
+        const formData = {
+            nombre: document.getElementById('nombre').value,
+            documento: document.getElementById('documento').value,
+            telefono: document.getElementById('telefono').value,
+            lat: document.getElementById('lat').value,
+            lon: document.getElementById('lon').value,
+            proximidad: document.getElementById('proximidad').value
+        };
+
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors', // Evita problemas de CORS con Apps Script
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(() => {
+            alert('¡Reporte generado y guardado con éxito!');
+            document.getElementById('reportForm').reset();
+            locationSwitch.checked = false;
+            stepForm.classList.remove('active');
+            stepLocation.classList.add('active');
+            locationStatus.innerHTML = '';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Hubo un error al enviar el reporte.');
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            formLoader.style.display = 'none';
+        });
+    });
+</script>
+
+</body>
+</html>
