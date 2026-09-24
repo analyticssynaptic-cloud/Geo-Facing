@@ -14,7 +14,7 @@
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var--bg-color);
+            background-color: var(--bg-color);
             margin: 0;
             padding: 20px;
             display: flex;
@@ -232,9 +232,9 @@
     let lastLon = null;
     let pingInterval = null;
 
-    // Fórmula matemática de Haversine para calcular distancia en metros entre dos coordenadas GPS
-    functio calculateDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371e3; // Radio de la tierra en metros
+    // Fórmula de Haversine para calcular distancia en metros
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371e3;
         const φ1 = lat1 * Math.PI/180;
         const φ2 = lat2 * Math.PI/180;
         const Δφ = (lat2-lat1) * Math.PI/180;
@@ -245,12 +245,12 @@
                   Math.sin(Δλ/2) * Math.sin(Δλ/2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
-        return Math.round(R * c); // Retorna la distancia en metros enteros
+        return Math.round(R * c);
     }
 
     locationSwitch.addEventListener('change', function() {
         if (this.checked) {
-            locationStatus.innerHTML = '<div class="loader">Obteniendo coordenadas GPS iniciales...</div>';
+            locationStatus.innerHTML = '<div class="loader">Obteniendo coordenadas GPS... Por favor permita el acceso en su navegador.</div>';
             
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
@@ -264,10 +264,10 @@
                         document.getElementById('lon').value = initialLon;
                         document.getElementById('proximidad').value = `Lat: ${initialLat.toFixed(5)}, Lon: ${initialLon.toFixed(5)}`;
 
-                        setTimeout(() => {
-                            stepLocation.classList.remove('active');
-                            stepForm.classList.add('active');
-                        }, 800);
+                        // Transición directa y asegurada al formulario
+                        locationStatus.innerHTML = '';
+                        stepLocation.classList.remove('active');
+                        stepForm.classList.add('active');
                     },
                     (error) => {
                         locationSwitch.checked = false;
@@ -277,12 +277,17 @@
                         }
                         locationStatus.innerHTML = `<div class="alert alert-error">${msg}</div>`;
                     },
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
                 );
             } else {
                 locationSwitch.checked = false;
                 locationStatus.innerHTML = '<div class="alert alert-error">Tu navegador no soporta geolocalización.</div>';
             }
+        } else {
+            // Si apagan el switch de forma manual estando en el paso 1, bloqueamos por seguridad
+            stepForm.classList.remove('active');
+            stepLocation.classList.add('active');
+            locationStatus.innerHTML = '';
         }
     });
 
@@ -334,12 +339,11 @@
                             const currentLat = position.coords.latitude;
                             const currentLon = position.coords.longitude;
 
-                            // Calcular metros movidos respecto al último registro y respecto al inicio
                             const metersMoved = calculateDistance(lastLat, lastLon, currentLat, currentLon);
                             const totalMetersFromStart = calculateDistance(initialLat, initialLon, currentLat, currentLon);
 
                             let movimientoEstado = "Estático / Sin cambios";
-                            if (metersMoved > 5) { // Margen de tolerancia de 5 metros por error de GPS
+                            if (metersMoved > 5) {
                                 movimientoEstado = `En movimiento (${metersMoved}m desde el último chequeo)`;
                             }
 
@@ -350,11 +354,10 @@
                                 lat: currentLat,
                                 lon: currentLon,
                                 proximidad: `Lat: ${currentLat.toFixed(5)}, Lon: ${currentLon.toFixed(5)}`,
-                                distancia: totalMetersFromStart, // Distancia acumulada total desde el punto inicial
+                                distancia: totalMetersFromStart,
                                 estado: movimientoEstado
                             };
 
-                            // Enviar datos automáticos al Sheet
                             fetch(SCRIPT_URL, {
                                 method: 'POST',
                                 mode: 'no-cors',
@@ -362,11 +365,9 @@
                                 body: JSON.stringify(pingData)
                             }).catch(err => console.error("Error enviando ping:", err));
 
-                            // Actualizar última posición conocida
                             lastLat = currentLat;
                             lastLon = currentLon;
 
-                            // Actualizar pantalla visualmente
                             document.getElementById('liveInfo').innerHTML = `Último chequeo: Movimiento total de <b>${totalMetersFromStart} metros</b> desde el inicio. Estado: <i>${movimientoEstado}</i>`;
                         },
                         (err) => {
@@ -375,7 +376,7 @@
                         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                     );
                 }
-            }, 120000); // 120,000 ms = Exactamente 2 minutos
+            }, 120000);
 
         })
         .catch(error => {
