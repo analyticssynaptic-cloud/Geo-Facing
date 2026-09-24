@@ -1,381 +1,942 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro y Validación</title>
-    <style>
-        :root {
-            --primary-color: #2563eb;
-            --error-color: #dc2626;
-            --success-color: #16a34a;
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .container {
-            background-color: var(--card-bg);
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 450px;
-        }
-        h2 {
-            color: #1e293b;
-            text-align: center;
-            margin-bottom: 24px;
-        }
-        .step {
-            display: none;
-        }
-        .step.active {
-            display: block;
-        }
-        .form-group {
-            margin-bottom: 16px;
-        }
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-            color: #475569;
-            font-size: 14px;
-        }
-        input[type="text"], input[type="tel"] {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 14px;
-        }
-        input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-        .switch-container {
-            background: #f1f5f9;
-            padding: 16px;
-            border-radius: 8px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 34px;
-            margin-top: 10px;
-        }
-        .switch input { 
-            opacity: 0; width: 0; height: 0; 
-        }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 34px;
-        }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 26px; width: 26px;
-            left: 4px; bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        input:checked + .slider {
-            background-color: var(--primary-color);
-        }
-        input:checked + .slider:before {
-            transform: translateX(26px);
-        }
-        .alert {
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 16px;
-            font-size: 13px;
-            text-align: center;
-        }
-        .alert-error {
-            background-color: #fee2e2;
-            color: var(--error-color);
-            border: 1px solid #fecaca;
-        }
-        .alert-success {
-            background-color: #dcfce7;
-            color: var(--success-color);
-            border: 1px solid #bbf7d0;
-        }
-        button {
-            width: 100%;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        button:hover {
-            background-color: #1d4ed8;
-        }
-        button:disabled {
-            background-color: #94a3b8;
-            cursor: not-allowed;
-        }
-        .loader {
-            text-align: center;
-            font-style: italic;
-            color: #64748b;
-            margin-top: 10px;
-        }
-        #successMessage {
-            display: none;
-            text-align: center;
-            color: var(--success-color);
-            font-weight: bold;
-            font-size: 16px;
-            margin-top: 20px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>GeoPresencia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:           #EBF0FF;
+      --surface:      #FFFFFF;
+      --surface-2:    #F0F4FF;
+      --border:       #CDD7FF;
+      --text:         #0D1529;
+      --muted:        #516080;
+      --accent:       #1947E5;
+      --accent-h:     #1238C5;
+      --accent-glow:  rgba(25,71,229,.08);
+      --ping:         #059669;
+      --ping-l:       #10B981;
+      --ping-bg:      #ECFDF5;
+      --ping-bd:      #6EE7B7;
+      --err:          #DC2626;
+      --err-bg:       #FEF2F2;
+      --err-bd:       #FECACA;
+      --hdr:          #0B1122;
+      --hdr-text:     #D8E4FF;
+      --radar:        rgba(100,150,255,.16);
+      --rdot:         #5B8FFF;
+      color-scheme: light;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg:          #070F1D;
+        --surface:     #0D1828;
+        --surface-2:   #152034;
+        --border:      #1D3050;
+        --text:        #D4E2FF;
+        --muted:       #6585B8;
+        --accent:      #4D82FF;
+        --accent-h:    #6596FF;
+        --accent-glow: rgba(77,130,255,.12);
+        --ping:        #10B981;
+        --ping-l:      #34D399;
+        --ping-bg:     rgba(16,185,129,.08);
+        --ping-bd:     rgba(52,211,153,.3);
+        --err:         #F87171;
+        --err-bg:      rgba(248,113,113,.08);
+        --err-bd:      rgba(248,113,113,.25);
+        --hdr:         #050D1A;
+        --hdr-text:    #D4E2FF;
+        --radar:       rgba(77,130,255,.12);
+        --rdot:        #4D82FF;
+        color-scheme: dark;
+      }
+    }
+
+    :root[data-theme="dark"] {
+      --bg:          #070F1D;
+      --surface:     #0D1828;
+      --surface-2:   #152034;
+      --border:      #1D3050;
+      --text:        #D4E2FF;
+      --muted:       #6585B8;
+      --accent:      #4D82FF;
+      --accent-h:    #6596FF;
+      --accent-glow: rgba(77,130,255,.12);
+      --ping:        #10B981;
+      --ping-l:      #34D399;
+      --ping-bg:     rgba(16,185,129,.08);
+      --ping-bd:     rgba(52,211,153,.3);
+      --err:         #F87171;
+      --err-bg:      rgba(248,113,113,.08);
+      --err-bd:      rgba(248,113,113,.25);
+      --hdr:         #050D1A;
+      --hdr-text:    #D4E2FF;
+      --radar:       rgba(77,130,255,.12);
+      --rdot:        #4D82FF;
+      color-scheme: dark;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: max(20px, env(safe-area-inset-top,0px)) 16px max(20px, env(safe-area-inset-bottom,0px));
+    }
+
+    /* ── CARD ─────────────────────────────────── */
+    .card {
+      width: 100%;
+      max-width: 440px;
+      background: var(--surface);
+      border-radius: 22px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow:
+        0 1px 3px rgba(14,23,41,.05),
+        0 8px 24px rgba(14,23,41,.10),
+        0 32px 64px rgba(14,23,41,.07);
+    }
+
+    /* ── HEADER ───────────────────────────────── */
+    .hdr {
+      background: var(--hdr);
+      padding: 24px 24px 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hdr::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 110% 50%, rgba(77,130,255,.12) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    .hdr-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hdr h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 21px;
+      font-weight: 700;
+      color: var(--hdr-text);
+      letter-spacing: -0.025em;
+      line-height: 1.1;
+    }
+
+    .hdr-sub {
+      font-size: 12.5px;
+      color: rgba(212,226,255,.45);
+      margin-top: 4px;
+    }
+
+    /* radar widget */
+    .radar {
+      position: relative;
+      width: 68px;
+      height: 68px;
+      flex-shrink: 0;
+    }
+
+    .r-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1.5px solid var(--radar);
+      animation: rp 2.8s ease-out infinite;
+    }
+    .r-ring:nth-child(2) { animation-delay: .93s; }
+    .r-ring:nth-child(3) { animation-delay: 1.86s; }
+
+    .r-dot {
+      position: absolute;
+      inset: 0; margin: auto;
+      width: 10px; height: 10px;
+      background: var(--rdot);
+      border-radius: 50%;
+      box-shadow: 0 0 12px var(--rdot), 0 0 24px rgba(77,130,255,.35);
+    }
+
+    @keyframes rp {
+      0%   { transform: scale(.22); opacity: 1; }
+      100% { transform: scale(2);   opacity: 0; }
+    }
+
+    /* step dots */
+    .steps {
+      display: flex;
+      gap: 5px;
+      padding-bottom: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .sd {
+      height: 3px;
+      border-radius: 2px;
+      flex: 1;
+      background: rgba(255,255,255,.13);
+      transition: background .45s;
+    }
+    .sd.on   { background: var(--rdot); }
+    .sd.done { background: var(--ping-l); }
+
+    /* ── BODY ─────────────────────────────────── */
+    .body { padding: 24px; }
+
+    /* ── STEP 0: GPS ──────────────────────────── */
+    .loc-hero { text-align: center; margin-bottom: 22px; }
+
+    .loc-ico {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 62px; height: 62px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      margin-bottom: 13px;
+    }
+
+    .loc-ico svg { width: 26px; height: 26px; color: var(--accent); }
+
+    .loc-hero h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 7px;
+    }
+
+    .loc-hero p {
+      font-size: 13.5px;
+      color: var(--muted);
+      line-height: 1.55;
+      max-width: 300px;
+      margin: 0 auto;
+    }
+
+    /* locating animation */
+    .locating {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0 22px;
+    }
+    .locating.on { display: flex; }
+
+    .loc-rings {
+      position: relative;
+      width: 54px; height: 54px;
+    }
+
+    .loc-rings em {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      opacity: 0;
+      animation: lr 2s ease-out infinite;
+    }
+    .loc-rings em:nth-child(2) { animation-delay: .66s; }
+    .loc-rings em:nth-child(3) { animation-delay: 1.32s; }
+
+    .loc-ctr {
+      position: absolute;
+      inset: 0; margin: auto;
+      width: 10px; height: 10px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    @keyframes lr {
+      0%   { transform: scale(.25); opacity: .9; }
+      100% { transform: scale(1.6); opacity: 0; }
+    }
+
+    .locating p { font-size: 13px; color: var(--muted); }
+
+    /* toggle row */
+    .tog {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      cursor: pointer;
+      user-select: none;
+      transition: border-color .2s;
+    }
+
+    .tog:hover { border-color: var(--accent); }
+
+    .tog-txt strong {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .tog-txt span { font-size: 12px; color: var(--muted); }
+
+    /* switch */
+    .sw { position: relative; width: 50px; height: 28px; flex-shrink: 0; }
+    .sw input { opacity: 0; position: absolute; width: 0; height: 0; }
+
+    .sl {
+      position: absolute;
+      inset: 0;
+      background: var(--border);
+      border-radius: 14px;
+      transition: background .25s;
+      cursor: pointer;
+    }
+    .sl::before {
+      content: '';
+      position: absolute;
+      width: 20px; height: 20px;
+      left: 4px; top: 4px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform .25s;
+      box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    }
+
+    .sw input:checked + .sl { background: var(--accent); }
+    .sw input:checked + .sl::before { transform: translateX(22px); }
+
+    /* ── STEP 1: FORM ────────────────────────── */
+    .coords-strip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--ping-bg);
+      border: 1px solid var(--ping-bd);
+      border-radius: 9px;
+      padding: 9px 12px;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--ping);
+      margin-bottom: 18px;
+    }
+
+    .pdot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--ping-l);
+      flex-shrink: 0;
+      animation: pd 2s ease-in-out infinite;
+    }
+
+    @keyframes pd { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    .fg { margin-bottom: 12px; }
+
+    .fl {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+
+    .fi {
+      width: 100%;
+      padding: 10px 13px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .fi:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .fi::placeholder { color: var(--muted); opacity: .5; }
+    .fi.err { border-color: var(--err); box-shadow: 0 0 0 3px rgba(220,38,38,.07); }
+
+    .btn {
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background .2s, opacity .15s, transform .1s;
+    }
+    .btn:hover:not(:disabled)   { background: var(--accent-h); }
+    .btn:active:not(:disabled)  { transform: scale(.99); }
+    .btn:disabled               { opacity: .55; cursor: not-allowed; }
+
+    .spinner {
+      width: 17px; height: 17px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      display: none;
+    }
+
+    .btn.ld .btn-txt { display: none; }
+    .btn.ld .spinner { display: block; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── STEP 2: MONITOR ─────────────────────── */
+    .ok-banner {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      background: var(--ping-bg);
+      border: 1px solid var(--ping-bd);
+      border-radius: 11px;
+      padding: 12px 14px;
+      margin-bottom: 18px;
+    }
+
+    .ok-ico {
+      width: 34px; height: 34px;
+      background: var(--ping);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .ok-banner h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--ping);
+    }
+
+    .ok-banner p { font-size: 12px; color: var(--muted); margin-top: 1px; }
+
+    /* stats grid */
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      margin-bottom: 16px;
+    }
+
+    .tile {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 12px 13px;
+    }
+
+    .t-lbl {
+      font-size: 10.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+
+    .t-val {
+      font-family: 'Syne', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    .t-val.a  { color: var(--accent); }
+    .t-val.g  { color: var(--ping); }
+
+    .t-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* status badge */
+    .sbadge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-top: 7px;
+    }
+
+    .sb-ok { background: var(--surface-2); color: var(--muted); border: 1px solid var(--border); }
+    .sb-mv { background: rgba(217,119,6,.1); color: #D97706; border: 1px solid rgba(217,119,6,.25); }
+
+    .pd2 { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: pd 1.5s ease-in-out infinite; }
+
+    /* activity log */
+    .act-hdr {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 9px;
+    }
+
+    .act-hdr > span {
+      font-size: 10.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--muted);
+    }
+
+    .live-pill {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 600;
+      color: var(--ping);
+      background: var(--ping-bg);
+      border: 1px solid var(--ping-bd);
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+
+    .log {
+      display: flex; flex-direction: column; gap: 5px;
+      max-height: 158px;
+      overflow-y: auto;
+    }
+    .log::-webkit-scrollbar { width: 3px; }
+    .log::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .log-row {
+      display: grid;
+      grid-template-columns: 50px 1fr auto;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 11px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 12px;
+      animation: fadeIn .3s ease;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+    .log-row .lt  { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+    .log-row .ld  { font-weight: 600; }
+    .log-row .ls  { color: var(--muted); font-size: 11px; }
+    .log-row.mv .ls { color: #D97706; }
+
+    /* alert */
+    .alert {
+      display: flex; align-items: flex-start; gap: 9px;
+      padding: 10px 13px;
+      border-radius: 9px;
+      font-size: 13px;
+      line-height: 1.45;
+      margin-top: 10px;
+    }
+    .alert svg { width: 15px; height: 15px; flex-shrink: 0; margin-top: 1px; }
+    .a-err { background: var(--err-bg); border: 1px solid var(--err-bd); color: var(--err); }
+
+    /* responsive */
+    @media (max-width: 420px) {
+      .hdr { padding: 20px 18px 0; }
+      .steps { padding-bottom: 13px; }
+      .body { padding: 18px; }
+      .t-val { font-size: 22px; }
+    }
+  </style>
 </head>
 <body>
 
-<div class="container">
-    <!-- PASO 1: SWITCH ÚNICO OBLIGATORIO DE UBICACIÓN -->
-    <div id="step-location" class="step active">
-        <h2>Verificación de Ubicación</h2>
-        <div class="switch-container">
-            <label for="locationSwitch" style="font-size: 15px; color: #1e293b;">Activar Ubicación GPS</label>
-            <p style="font-size: 12px; color: #64748b; margin: 8px 0;">Debe activar obligatoriamente la ubicación para continuar.</p>
-            <label class="switch">
-                <input type="checkbox" id="locationSwitch">
-                <span class="slider"></span>
-            </label>
+<div class="card">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-row">
+      <div>
+        <h1>GeoPresencia</h1>
+        <p class="hdr-sub">Verificación y seguimiento de ubicación</p>
+      </div>
+      <div class="radar">
+        <div class="r-ring"></div>
+        <div class="r-ring"></div>
+        <div class="r-ring"></div>
+        <div class="r-dot"></div>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="sd on"  id="d0"></div>
+      <div class="sd"     id="d1"></div>
+      <div class="sd"     id="d2"></div>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="body">
+
+    <!-- PASO 0: UBICACIÓN -->
+    <div id="s0">
+      <div class="loc-hero">
+        <div class="loc-ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
         </div>
-        <div id="locationStatus"></div>
+        <h2>Activar ubicación GPS</h2>
+        <p>Para registrar su presencia, debe permitir el acceso a su ubicación. Es obligatorio para continuar.</p>
+      </div>
+
+      <div class="locating" id="locating">
+        <div class="loc-rings">
+          <em></em><em></em><em></em>
+          <div class="loc-ctr"></div>
+        </div>
+        <p>Obteniendo coordenadas GPS…</p>
+      </div>
+
+      <div id="tog-wrap">
+        <label class="tog" for="locSw">
+          <div class="tog-txt">
+            <strong>Activar ubicación</strong>
+            <span>Toque para dar acceso al GPS</span>
+          </div>
+          <label class="sw">
+            <input type="checkbox" id="locSw">
+            <span class="sl"></span>
+          </label>
+        </label>
+      </div>
+
+      <div id="s0-err"></div>
     </div>
 
-    <!-- PASO 2: FORMULARIO DE GESTIÓN -->
-    <div id="step-form" class="step">
-        <h2>Gestión y Registro</h2>
-        <div class="alert alert-success">¡Ubicación activada correctamente!</div>
-        
-        <form id="reportForm">
-            <div class="form-group">
-                <label for="nombre">Nombre Completo:</label>
-                <input type="text" id="nombre" required placeholder="Ej. Robinson Zapata">
-            </div>
-            
-            <div class="form-group">
-                <label for="documento">Número de Documento:</label>
-                <input type="text" id="documento" required placeholder="Ej. 123456789">
-            </div>
-            
-            <div class="form-group">
-                <label for="telefono">Número de Teléfono:</label>
-                <input type="tel" id="telefono" required placeholder="Ej. 3001234567">
-            </div>
+    <!-- PASO 1: FORMULARIO -->
+    <div id="s1" style="display:none">
+      <div class="coords-strip">
+        <span class="pdot"></span>
+        <span id="coordsTxt">GPS activo</span>
+      </div>
 
-            <!-- Campos ocultos de coordenadas -->
-            <input type="hidden" id="lat">
-            <input type="hidden" id="lon">
-            <input type="hidden" id="proximidad">
+      <div class="fg">
+        <label class="fl" for="nombre">Nombre completo</label>
+        <input class="fi" type="text" id="nombre" autocomplete="name"
+               placeholder="Ej. Robinson Zapata">
+      </div>
+      <div class="fg">
+        <label class="fl" for="documento">Número de documento</label>
+        <input class="fi" type="text" id="documento" autocomplete="off"
+               inputmode="numeric" placeholder="Ej. 1234567890">
+      </div>
+      <div class="fg">
+        <label class="fl" for="telefono">Teléfono</label>
+        <input class="fi" type="tel" id="telefono" autocomplete="tel"
+               inputmode="tel" placeholder="Ej. 3001234567">
+      </div>
 
-            <button type="submit" id="submitBtn">Enviar Registro</button>
-            <div id="formLoader" class="loader" style="display:none;">Procesando registro...</div>
-        </form>
-
-        <!-- Mensaje de éxito limpio sin avisos molestos de monitoreo -->
-        <div id="successMessage">
-            ✅ ¡Registro exitoso!<br>Ya puede cerrar o continuar.
-        </div>
+      <button class="btn" id="submitBtn" type="button">
+        <span class="btn-txt">Registrar presencia</span>
+        <span class="spinner"></span>
+      </button>
     </div>
+
+    <!-- PASO 2: MONITOR -->
+    <div id="s2" style="display:none">
+      <div class="ok-banner">
+        <div class="ok-ico">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <div>
+          <h3>Registro enviado</h3>
+          <p id="regName">Monitoreo activo en segundo plano</p>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="tile">
+          <div class="t-lbl">Próximo ping</div>
+          <div class="t-val a" id="countdown">2:00</div>
+          <div class="t-sub">actualización auto.</div>
+        </div>
+        <div class="tile">
+          <div class="t-lbl">Distancia inicio</div>
+          <div class="t-val" id="totalDist">0</div>
+          <div class="t-sub">metros del punto base</div>
+        </div>
+        <div class="tile">
+          <div class="t-lbl">Pings enviados</div>
+          <div class="t-val g" id="pingCount">0</div>
+          <div class="t-sub">actualizaciones</div>
+        </div>
+        <div class="tile">
+          <div class="t-lbl">Estado</div>
+          <div class="sbadge sb-ok" id="statusBadge">
+            <span class="pd2"></span>
+            <span id="statusTxt">Estático</span>
+          </div>
+          <div class="t-sub" id="statusSub">Sin movimiento</div>
+        </div>
+      </div>
+
+      <div class="act-hdr">
+        <span>Registro de actividad</span>
+        <span class="live-pill"><span class="pd2"></span>EN VIVO</span>
+      </div>
+
+      <div class="log" id="logList"></div>
+    </div>
+
+  </div><!-- /body -->
 </div>
 
 <script>
-    const SCRIPT_URL = 'TU_URL_DE_WEB_APP_AQUI'; // Reemplaza con tu URL de Apps Script
-    
-    const locationSwitch = document.getElementById('locationSwitch');
-    const locationStatus = document.getElementById('locationStatus');
-    const stepLocation = document.getElementById('step-location');
-    const stepForm = document.getElementById('step-form');
+  // ── CONFIGURACIÓN ────────────────────────────────────────────
+  const SCRIPT_URL = 'TU_URL_DE_WEB_APP_AQUI'; // ← Reemplaza con tu URL de Apps Script
 
-    let initialLat = null;
-    let initialLon = null;
-    let lastLat = null;
-    let lastLon = null;
-    let pingInterval = null;
+  // ── ESTADO ───────────────────────────────────────────────────
+  let initLat = null, initLon = null;
+  let lastLat = null, lastLon = null;
+  let pingInterval     = null;
+  let countdownInterval = null;
+  let pingCount        = 0;
+  let secsLeft         = 120;
+  let userData         = {};
 
-    // Fórmula Haversine para calcular distancia exacta en metros
-    function calculateDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371e3;
-        const φ1 = lat1 * Math.PI/180;
-        const φ2 = lat2 * Math.PI/180;
-        const Δφ = (lat2-lat1) * Math.PI/180;
-        const Δλ = (lon2-lon1) * Math.PI/180;
+  // ── DOM ──────────────────────────────────────────────────────
+  const locSw   = document.getElementById('locSw');
+  const locating = document.getElementById('locating');
+  const togWrap = document.getElementById('tog-wrap');
+  const s0err   = document.getElementById('s0-err');
 
-        const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-                  Math.cos(φ1) * Math.cos(φ2) *
-                  Math.sin(Δλ/2) * Math.sin(Δλ/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  function show(id)  { document.getElementById(id).style.display = 'block'; }
+  function hide(id)  { document.getElementById(id).style.display = 'none'; }
 
-        return Math.round(R * c);
+  function setStep(n) {
+    ['s0','s1','s2'].forEach((id,i) =>
+      document.getElementById(id).style.display = i===n ? 'block' : 'none');
+    ['d0','d1','d2'].forEach((id,i) => {
+      const el = document.getElementById(id);
+      el.className = 'sd' + (i<n?' done': i===n?' on':'');
+    });
+  }
+
+  // ── HAVERSINE ────────────────────────────────────────────────
+  function haversine(la1,lo1,la2,lo2) {
+    const R=6371e3, f1=la1*Math.PI/180, f2=la2*Math.PI/180;
+    const df=(la2-la1)*Math.PI/180, dl=(lo2-lo1)*Math.PI/180;
+    const a = Math.sin(df/2)**2 + Math.cos(f1)*Math.cos(f2)*Math.sin(dl/2)**2;
+    return Math.round(R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)));
+  }
+
+  // ── PASO 0: GPS ──────────────────────────────────────────────
+  locSw.addEventListener('change', () => {
+    if (!locSw.checked) return;
+    togWrap.style.display = 'none';
+    locating.classList.add('on');
+    s0err.innerHTML = '';
+
+    if (!navigator.geolocation) {
+      gpsError('Tu navegador no soporta geolocalización.'); return;
     }
 
-    locationSwitch.addEventListener('change', function() {
-        if (this.checked) {
-            locationStatus.innerHTML = '<div class="loader">Obteniendo coordenadas GPS...</div>';
-            
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        initialLat = position.coords.latitude;
-                        initialLon = position.coords.longitude;
-                        lastLat = initialLat;
-                        lastLon = initialLon;
-                        
-                        document.getElementById('lat').value = initialLat;
-                        document.getElementById('lon').value = initialLon;
-                        document.getElementById('proximidad').value = `Lat: ${initialLat.toFixed(5)}, Lon: ${initialLon.toFixed(5)}`;
+    navigator.geolocation.getCurrentPosition(pos => {
+      initLat = lastLat = pos.coords.latitude;
+      initLon = lastLon = pos.coords.longitude;
+      locating.classList.remove('on');
+      document.getElementById('coordsTxt').textContent =
+        `GPS: ${initLat.toFixed(5)}, ${initLon.toFixed(5)}`;
+      setStep(1);
+    }, err => {
+      gpsError(err.code === err.PERMISSION_DENIED
+        ? 'Acceso denegado. Debe permitir la ubicación para continuar.'
+        : 'No se pudo obtener la ubicación. Inténtelo de nuevo.');
+    }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+  });
 
-                        locationStatus.innerHTML = '';
-                        stepLocation.classList.remove('active');
-                        stepForm.classList.add('active');
-                    },
-                    (error) => {
-                        locationSwitch.checked = false;
-                        let msg = "Error al obtener ubicación.";
-                        if(error.code === error.PERMISSION_DENIED) {
-                            msg = "Acceso denegado. Es obligatorio permitir la ubicación.";
-                        }
-                        locationStatus.innerHTML = `<div class="alert alert-error">${msg}</div>`;
-                    },
-                    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-                );
-            } else {
-                locationSwitch.checked = false;
-                locationStatus.innerHTML = '<div class="alert alert-error">Tu navegador no soporta geolocalización.</div>';
-            }
-        } else {
-            stepForm.classList.remove('active');
-            stepLocation.classList.add('active');
-            locationStatus.innerHTML = '';
-        }
+  function gpsError(msg) {
+    locSw.checked = false;
+    locating.classList.remove('on');
+    togWrap.style.display = 'block';
+    s0err.innerHTML = `
+      <div class="alert a-err">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        ${msg}
+      </div>`;
+  }
+
+  // ── PASO 1: ENVÍO ────────────────────────────────────────────
+  document.getElementById('submitBtn').addEventListener('click', () => {
+    const nombre    = document.getElementById('nombre').value.trim();
+    const documento = document.getElementById('documento').value.trim();
+    const telefono  = document.getElementById('telefono').value.trim();
+
+    // validación simple: resalta el primer campo vacío
+    [['nombre',nombre],['documento',documento],['telefono',telefono]].some(([id,v]) => {
+      const el = document.getElementById(id);
+      if (!v) { el.classList.add('err'); el.focus(); return true; }
+      el.classList.remove('err');
+      return false;
     });
+    if (!nombre || !documento || !telefono) return;
 
-    // Envío del formulario y arranque automático del background ping cada 2 minutos
-    document.getElementById('reportForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const submitBtn = document.getElementById('submitBtn');
-        const formLoader = document.getElementById('formLoader');
-        
-        submitBtn.disabled = true;
-        formLoader.style.display = 'block';
+    userData = { nombre, documento, telefono };
+    const btn = document.getElementById('submitBtn');
+    btn.classList.add('ld'); btn.disabled = true;
 
-        const nombreVal = document.getElementById('nombre').value;
-        const documentoVal = document.getElementById('documento').value;
-        const telefonoVal = document.getElementById('telefono').value;
+    const payload = {
+      ...userData,
+      lat: initLat, lon: initLon,
+      proximidad: `Inicio — Lat: ${initLat.toFixed(5)}, Lon: ${initLon.toFixed(5)}`,
+      distancia: 0,
+      estado: 'Punto de Partida (0m)'
+    };
 
-        const initialData = {
-            nombre: nombreVal,
-            documento: documentoVal,
-            telefono: telefonoVal,
-            lat: initialLat,
-            lon: initialLon,
-            proximidad: `Inicio - Lat: ${initialLat.toFixed(5)}, Lon: ${initialLon.toFixed(5)}`,
-            distancia: 0,
-            estado: "Punto de Partida (0m)"
-        };
+    fetch(SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(() => {
+      document.getElementById('regName').textContent = `Activo: ${nombre}`;
+      setStep(2);
+      addLog(0, false, initLat, initLon);
+      startCountdown();
+      startAutoPing();
+    })
+    .catch(() => {
+      // no-cors siempre resuelve; esto solo ocurre con fallo de red total
+      btn.classList.remove('ld'); btn.disabled = false;
+    });
+  });
 
-        // Enviar evento inicial al Google Sheet
+  // ── COUNTDOWN ────────────────────────────────────────────────
+  function startCountdown() {
+    secsLeft = 120;
+    renderCountdown();
+    if (countdownInterval) clearInterval(countdownInterval);
+    countdownInterval = setInterval(() => {
+      secsLeft = Math.max(0, secsLeft - 1);
+      renderCountdown();
+    }, 1000);
+  }
+
+  function renderCountdown() {
+    const m = Math.floor(secsLeft/60), s = secsLeft%60;
+    document.getElementById('countdown').textContent =
+      `${m}:${String(s).padStart(2,'0')}`;
+  }
+
+  // ── AUTO-PING cada 2 minutos ─────────────────────────────────
+  function startAutoPing() {
+    if (pingInterval) clearInterval(pingInterval);
+    pingInterval = setInterval(() => {
+      if (!navigator.geolocation) return;
+      navigator.geolocation.getCurrentPosition(pos => {
+        const cLat = pos.coords.latitude;
+        const cLon = pos.coords.longitude;
+        const moved = haversine(lastLat, lastLon, cLat, cLon);
+        const total = haversine(initLat, initLon, cLat, cLon);
+        const moving = moved > 5;
+
+        pingCount++;
+        document.getElementById('pingCount').textContent  = pingCount;
+        document.getElementById('totalDist').textContent  = total;
+
+        const badge = document.getElementById('statusBadge');
+        badge.className = 'sbadge ' + (moving ? 'sb-mv' : 'sb-ok');
+        document.getElementById('statusTxt').textContent  = moving ? 'Movimiento' : 'Estático';
+        document.getElementById('statusSub').textContent  = moving
+          ? `+${moved}m desde último ping`
+          : `A ${total}m del punto base`;
+
+        const estado = moving
+          ? `En movimiento (${moved}m desde el último chequeo)`
+          : 'Estático / Sin cambios';
+
+        addLog(total, moving, cLat, cLon);
+
         fetch(SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(initialData)
-        })
-        .then(() => {
-            // Ocultar formulario y mostrar mensaje limpio de éxito
-            document.getElementById('reportForm').style.display = 'none';
-            document.getElementById('successMessage').style.display = 'block';
+          method: 'POST', mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...userData,
+            nombre: userData.nombre + ' (AUTO-PING)',
+            lat: cLat, lon: cLon,
+            proximidad: `Lat: ${cLat.toFixed(5)}, Lon: ${cLon.toFixed(5)}`,
+            distancia: total,
+            estado
+          })
+        }).catch(e => console.warn('ping err:', e));
 
-            // ARRANQUE SILENCIOSO AUTOMÁTICO CADA 2 MINUTOS (120,000 ms)
-            if (pingInterval) clearInterval(pingInterval);
-            
-            pingInterval = setInterval(() => {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                            const currentLat = position.coords.latitude;
-                            const currentLon = position.coords.longitude;
+        lastLat = cLat; lastLon = cLon;
 
-                            const metersMoved = calculateDistance(lastLat, lastLon, currentLat, currentLon);
-                            const totalMetersFromStart = calculateDistance(initialLat, initialLon, currentLat, currentLon);
+        // reinicia el countdown visual para sincronizar con el ping real
+        secsLeft = 120;
+      }, e => console.warn('GPS update fail:', e),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+    }, 120000); // exactamente 2 minutos
+  }
 
-                            let movimientoEstado = "Estático / Sin cambios";
-                            if (metersMoved > 5) {
-                                movimientoEstado = `En movimiento (${metersMoved}m desde el último chequeo)`;
-                            }
+  // ── LOG DE ACTIVIDAD ─────────────────────────────────────────
+  function addLog(totalM, moving, lat, lon) {
+    const log = document.getElementById('logList');
+    const t   = new Date().toLocaleTimeString('es-CO', { hour:'2-digit', minute:'2-digit' });
 
-                            const pingData = {
-                                nombre: nombreVal + " (AUTO-PING)",
-                                documento: documentoVal,
-                                telefono: telefonoVal,
-                                lat: currentLat,
-                                lon: currentLon,
-                                proximidad: `Lat: ${currentLat.toFixed(5)}, Lon: ${currentLon.toFixed(5)}`,
-                                distancia: totalMetersFromStart,
-                                estado: movimientoEstado
-                            };
+    const row = document.createElement('div');
+    row.className = 'log-row' + (moving ? ' mv' : '');
+    row.innerHTML =
+      `<span class="lt">${t}</span>` +
+      `<span class="ld">${totalM}m</span>` +
+      `<span class="ls">${moving ? '⬆ Movimiento' : '· Estático'}</span>`;
 
-                            // Envío automático y silencioso al Google Sheet
-                            fetch(SCRIPT_URL, {
-                                method: 'POST',
-                                mode: 'no-cors',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(pingData)
-                            }).catch(err => console.error("Error en auto-ping:", err));
-
-                            lastLat = currentLat;
-                            lastLon = currentLon;
-                        },
-                        (err) => {
-                            console.warn("No se pudo refrescar el GPS en segundo plano:", err);
-                        },
-                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-                    );
-                }
-            }, 120000); // Exactamente cada 2 minutos
-
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Hubo un error al enviar el registro.');
-            submitBtn.disabled = false;
-        })
-        .finally(() => {
-            formLoader.style.display = 'none';
-        });
-    });
+    log.prepend(row);
+    while (log.children.length > 20) log.removeChild(log.lastChild);
+  }
 </script>
 
 </body>
